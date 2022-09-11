@@ -6,6 +6,7 @@ import { ArticleService } from './article.service';
 import { CreateArticleDto } from './dto/createArticle.dto';
 import { ArticleResponseInterface } from './types/articleResponse.interface';
 import {ArticlesResponseInterface} from "@app/article/types/articlesResponse.Interface";
+import { BackendValidationPipe } from "@app/shared/pipes/backendValidation.pipe";
 
 @Controller('articles')
 export class ArticleController {
@@ -21,6 +22,7 @@ export class ArticleController {
 
     @Post()
     @UseGuards(AuthGuard)
+    @UsePipes(new BackendValidationPipe())
     async create(
         @User() currentUser: UserEntity,
         @Body('article') createArticleDto: CreateArticleDto,
@@ -50,7 +52,7 @@ export class ArticleController {
 
     @Put(':slug')
     @UseGuards(AuthGuard)
-    @UsePipes(new ValidationPipe())
+    @UsePipes(new BackendValidationPipe())
     async updateArticle(
         @User('id') currentUserId: number,
         @Param('slug') slug: string,
@@ -88,5 +90,14 @@ export class ArticleController {
           currentUserId,
         );
         return this.articleService.buildArticleResponse(article);
+    }
+
+    @Get('feed')
+    @UseGuards(AuthGuard)
+    async getFeed(
+      @User('id') currentUserId: number,
+      @Query() query: any,
+    ): Promise<ArticlesResponseInterface> {
+        return await this.articleService.getFeed(currentUserId, query);
     }
 }
